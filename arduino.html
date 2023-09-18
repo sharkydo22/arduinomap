@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Map Page</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAbOGn5tQAxBuYo8utdTe58SEvQGgnZBuM"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        function initMap() {
+            var coordinates = { lat: 23.555220092574118, lng: 120.47416956760017 }; // 使用特定的座標
+            var mapOptions = {
+                center: coordinates,
+                zoom: 10
+            };
+            var map = new google.maps.Map(document.getElementById("map"), mapOptions);
+            var marker = new google.maps.Marker({
+                position: coordinates,
+                map: map
+            });
+
+            setInterval(updateCoordinates, 10000); // 每10秒更新一次座標
+        }
+
+        function updateCoordinates() {
+            $.ajax({
+                url: "https://api.thingspeak.com/channels/B45SZAJXAY325IL0/feeds.json?api_key=7ZNP3D9QCDACO9GS&results=1",
+                dataType: "json",
+                success: function (data) {
+                    var latitude = data.feeds[0].field1; // 取得最新的緯度資訊
+                    var longitude = data.feeds[0].field2; // 取得最新的經度資訊
+
+                    var coordinatesElement = document.getElementById("coordinates");
+                    coordinatesElement.textContent = "Latitude: " + latitude + ", Longitude: " + longitude;
+
+                    // 更新地圖標記位置
+                    var coordinates = { lat: parseFloat(latitude), lng: parseFloat(longitude) };
+                    var map = new google.maps.Map(document.getElementById("map"));
+                    map.setCenter(coordinates);
+                    marker.setPosition(coordinates);
+                }
+            });
+        }
+
+        window.onload = initMap;
+    </script>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div id="coordinates"></div>
+</body>
+
+</html>
